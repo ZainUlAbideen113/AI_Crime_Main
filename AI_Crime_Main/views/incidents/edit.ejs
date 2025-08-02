@@ -1,0 +1,419 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Page Header -->
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0">Edit Incident</h1>
+          <p class="text-muted">Update incident information</p>
+        </div>
+        <a href="/incidents/<%= incident._id %>" class="btn btn-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Back to Incident
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <% if (errors && errors.length > 0) { %>
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="alert alert-danger">
+          <h6>Please correct the following errors:</h6>
+          <ul class="mb-0">
+            <% errors.forEach(error => { %>
+              <li><%= error.msg %></li>
+            <% }); %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+  <form action="/incidents/<%= incident._id %>?_method=PUT" method="POST" enctype="multipart/form-data">
+    <div class="row">
+      <!-- Main Form -->
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">Incident Information</h5>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="incidentNumber" class="form-label">Incident Number</label>
+                <input type="text" class="form-control" id="incidentNumber" name="incidentNumber" 
+                       value="<%= incident.incidentNumber %>" readonly>
+              </div>
+              <div class="col-md-6">
+                <label for="type" class="form-label">Type *</label>
+                <select class="form-select" id="type" name="type" required>
+                  <option value="">Select incident type...</option>
+                  <option value="theft" <%= incident.type === 'theft' ? 'selected' : '' %>>Theft</option>
+                  <option value="assault" <%= incident.type === 'assault' ? 'selected' : '' %>>Assault</option>
+                  <option value="burglary" <%= incident.type === 'burglary' ? 'selected' : '' %>>Burglary</option>
+                  <option value="vandalism" <%= incident.type === 'vandalism' ? 'selected' : '' %>>Vandalism</option>
+                  <option value="drug_offense" <%= incident.type === 'drug_offense' ? 'selected' : '' %>>Drug Offense</option>
+                  <option value="traffic_violation" <%= incident.type === 'traffic_violation' ? 'selected' : '' %>>Traffic Violation</option>
+                  <option value="domestic_violence" <%= incident.type === 'domestic_violence' ? 'selected' : '' %>>Domestic Violence</option>
+                  <option value="fraud" <%= incident.type === 'fraud' ? 'selected' : '' %>>Fraud</option>
+                  <option value="other" <%= incident.type === 'other' ? 'selected' : '' %>>Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="severity" class="form-label">Severity *</label>
+                <select class="form-select" id="severity" name="severity" required>
+                  <option value="low" <%= incident.severity === 'low' ? 'selected' : '' %>>Low</option>
+                  <option value="medium" <%= incident.severity === 'medium' ? 'selected' : '' %>>Medium</option>
+                  <option value="high" <%= incident.severity === 'high' ? 'selected' : '' %>>High</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="status" class="form-label">Status *</label>
+                <select class="form-select" id="status" name="status" required>
+                  <option value="reported" <%= incident.status === 'reported' ? 'selected' : '' %>>Reported</option>
+                  <option value="in_progress" <%= incident.status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
+                  <option value="resolved" <%= incident.status === 'resolved' ? 'selected' : '' %>>Resolved</option>
+                  <option value="closed" <%= incident.status === 'closed' ? 'selected' : '' %>>Closed</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="dateTime" class="form-label">Date & Time *</label>
+                <input type="datetime-local" class="form-control" id="dateTime" name="dateTime" 
+                       value="<%= new Date(incident.dateTime).toISOString().slice(0, 16) %>" required>
+              </div>
+              <div class="col-md-6">
+                <label for="location" class="form-label">Location *</label>
+                <input type="text" class="form-control" id="location" name="location" 
+                       placeholder="Enter incident location..." 
+                       value="<%= incident.location %>" required>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Description *</label>
+              <textarea class="form-control" id="description" name="description" rows="4" 
+                        placeholder="Detailed description of the incident..." required><%= incident.description %></textarea>
+            </div>
+
+            <!-- Coordinates -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="latitude" class="form-label">Latitude</label>
+                <input type="number" class="form-control" id="latitude" name="latitude" 
+                       step="any" placeholder="0.000000" 
+                       value="<%= incident.coordinates ? incident.coordinates.lat : '' %>">
+              </div>
+              <div class="col-md-6">
+                <label for="longitude" class="form-label">Longitude</label>
+                <input type="number" class="form-control" id="longitude" name="longitude" 
+                       step="any" placeholder="0.000000" 
+                       value="<%= incident.coordinates ? incident.coordinates.lng : '' %>">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Evidence Section -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h5 class="card-title mb-0">Evidence</h5>
+          </div>
+          <div class="card-body">
+            <div id="evidenceList">
+              <% if (incident.evidence && incident.evidence.length > 0) { %>
+                <% incident.evidence.forEach((evidence, index) => { %>
+                  <div class="evidence-item border rounded p-3 mb-3">
+                    <div class="row">
+                      <div class="col-md-4">
+                        <label class="form-label">Evidence Type</label>
+                        <select class="form-select" name="evidence[<%= index %>][type]">
+                          <option value="photo" <%= evidence.type === 'photo' ? 'selected' : '' %>>Photo</option>
+                          <option value="document" <%= evidence.type === 'document' ? 'selected' : '' %>>Document</option>
+                          <option value="video" <%= evidence.type === 'video' ? 'selected' : '' %>>Video</option>
+                          <option value="audio" <%= evidence.type === 'audio' ? 'selected' : '' %>>Audio</option>
+                          <option value="physical" <%= evidence.type === 'physical' ? 'selected' : '' %>>Physical</option>
+                          <option value="other" <%= evidence.type === 'other' ? 'selected' : '' %>>Other</option>
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" name="evidence[<%= index %>][description]" 
+                               value="<%= evidence.description %>">
+                      </div>
+                      <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-danger" onclick="removeEvidence(this)">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <% if (evidence.fileUrl) { %>
+                      <div class="row mt-2">
+                        <div class="col-12">
+                          <small class="text-muted">Current file: 
+                            <a href="<%= evidence.fileUrl %>" target="_blank"><%= evidence.fileUrl %></a>
+                          </small>
+                        </div>
+                      </div>
+                    <% } %>
+                  </div>
+                <% }); %>
+              <% } %>
+            </div>
+            <button type="button" class="btn btn-outline-primary" onclick="addEvidence()">
+              <i class="fas fa-plus me-2"></i>Add Evidence
+            </button>
+          </div>
+        </div>
+
+        <!-- Witnesses Section -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h5 class="card-title mb-0">Witnesses</h5>
+          </div>
+          <div class="card-body">
+            <div id="witnessList">
+              <% if (incident.witnesses && incident.witnesses.length > 0) { %>
+                <% incident.witnesses.forEach((witness, index) => { %>
+                  <div class="witness-item border rounded p-3 mb-3">
+                    <div class="row">
+                      <div class="col-md-4">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="witnesses[<%= index %>][name]" 
+                               value="<%= witness.name %>">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Contact</label>
+                        <input type="text" class="form-control" name="witnesses[<%= index %>][contact]" 
+                               value="<%= witness.contact %>">
+                      </div>
+                      <div class="col-md-4 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-danger" onclick="removeWitness(this)">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="row mt-2">
+                      <div class="col-12">
+                        <label class="form-label">Statement</label>
+                        <textarea class="form-control" name="witnesses[<%= index %>][statement]" rows="2"><%= witness.statement %></textarea>
+                      </div>
+                    </div>
+                  </div>
+                <% }); %>
+              <% } %>
+            </div>
+            <button type="button" class="btn btn-outline-primary" onclick="addWitness()">
+              <i class="fas fa-plus me-2"></i>Add Witness
+            </button>
+          </div>
+        </div>
+
+        <!-- Suspects Section -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h5 class="card-title mb-0">Suspects</h5>
+          </div>
+          <div class="card-body">
+            <div id="suspectList">
+              <% if (incident.suspects && incident.suspects.length > 0) { %>
+                <% incident.suspects.forEach((suspect, index) => { %>
+                  <div class="suspect-item border rounded p-3 mb-3">
+                    <div class="row">
+                      <div class="col-md-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="suspects[<%= index %>][name]" 
+                               value="<%= suspect.name %>">
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="suspects[<%= index %>][status]">
+                          <option value="unknown" <%= suspect.status === 'unknown' ? 'selected' : '' %>>Unknown</option>
+                          <option value="wanted" <%= suspect.status === 'wanted' ? 'selected' : '' %>>Wanted</option>
+                          <option value="apprehended" <%= suspect.status === 'apprehended' ? 'selected' : '' %>>Apprehended</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" name="suspects[<%= index %>][description]" 
+                               value="<%= suspect.description %>">
+                      </div>
+                      <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-danger" onclick="removeSuspect(this)">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                <% }); %>
+              <% } %>
+            </div>
+            <button type="button" class="btn btn-outline-primary" onclick="addSuspect()">
+              <i class="fas fa-plus me-2"></i>Add Suspect
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="col-lg-4">
+        <div class="card">
+          <div class="card-header">
+            <h6 class="card-title mb-0">Case Association</h6>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="caseId" class="form-label">Associated Case</label>
+              <select class="form-select" id="caseId" name="caseId">
+                <option value="">No case selected</option>
+                <!-- Available cases would be populated here -->
+                <% if (incident.caseId) { %>
+                  <option value="<%= incident.caseId._id %>" selected>
+                    <%= incident.caseId.caseNumber %> - <%= incident.caseId.title %>
+                  </option>
+                <% } %>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-3">
+          <div class="card-header">
+            <h6 class="card-title mb-0">Actions</h6>
+          </div>
+          <div class="card-body">
+            <button type="submit" class="btn btn-primary w-100 mb-2">
+              <i class="fas fa-save me-2"></i>Update Incident
+            </button>
+            <a href="/incidents/<%= incident._id %>" class="btn btn-outline-secondary w-100">
+              <i class="fas fa-times me-2"></i>Cancel
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+let evidenceCounter = <%= incident.evidence ? incident.evidence.length : 0 %>;
+let witnessCounter = <%= incident.witnesses ? incident.witnesses.length : 0 %>;
+let suspectCounter = <%= incident.suspects ? incident.suspects.length : 0 %>;
+
+function addEvidence() {
+  const evidenceList = document.getElementById('evidenceList');
+  const evidenceItem = document.createElement('div');
+  evidenceItem.className = 'evidence-item border rounded p-3 mb-3';
+  evidenceItem.innerHTML = `
+    <div class="row">
+      <div class="col-md-4">
+        <label class="form-label">Evidence Type</label>
+        <select class="form-select" name="evidence[${evidenceCounter}][type]">
+          <option value="photo">Photo</option>
+          <option value="document">Document</option>
+          <option value="video">Video</option>
+          <option value="audio">Audio</option>
+          <option value="physical">Physical</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Description</label>
+        <input type="text" class="form-control" name="evidence[${evidenceCounter}][description]">
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="button" class="btn btn-outline-danger" onclick="removeEvidence(this)">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  `;
+  evidenceList.appendChild(evidenceItem);
+  evidenceCounter++;
+}
+
+function removeEvidence(button) {
+  button.closest('.evidence-item').remove();
+}
+
+function addWitness() {
+  const witnessList = document.getElementById('witnessList');
+  const witnessItem = document.createElement('div');
+  witnessItem.className = 'witness-item border rounded p-3 mb-3';
+  witnessItem.innerHTML = `
+    <div class="row">
+      <div class="col-md-4">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-control" name="witnesses[${witnessCounter}][name]">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Contact</label>
+        <input type="text" class="form-control" name="witnesses[${witnessCounter}][contact]">
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <button type="button" class="btn btn-outline-danger" onclick="removeWitness(this)">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+    <div class="row mt-2">
+      <div class="col-12">
+        <label class="form-label">Statement</label>
+        <textarea class="form-control" name="witnesses[${witnessCounter}][statement]" rows="2"></textarea>
+      </div>
+    </div>
+  `;
+  witnessList.appendChild(witnessItem);
+  witnessCounter++;
+}
+
+function removeWitness(button) {
+  button.closest('.witness-item').remove();
+}
+
+function addSuspect() {
+  const suspectList = document.getElementById('suspectList');
+  const suspectItem = document.createElement('div');
+  suspectItem.className = 'suspect-item border rounded p-3 mb-3';
+  suspectItem.innerHTML = `
+    <div class="row">
+      <div class="col-md-3">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-control" name="suspects[${suspectCounter}][name]">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Status</label>
+        <select class="form-select" name="suspects[${suspectCounter}][status]">
+          <option value="unknown">Unknown</option>
+          <option value="wanted">Wanted</option>
+          <option value="apprehended">Apprehended</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Description</label>
+        <input type="text" class="form-control" name="suspects[${suspectCounter}][description]">
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="button" class="btn btn-outline-danger" onclick="removeSuspect(this)">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  `;
+  suspectList.appendChild(suspectItem);
+  suspectCounter++;
+}
+
+function removeSuspect(button) {
+  button.closest('.suspect-item').remove();
+}
+</script>
+
+<%- include('../partials/footer') %>

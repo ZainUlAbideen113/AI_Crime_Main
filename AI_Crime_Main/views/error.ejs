@@ -1,0 +1,51 @@
+<%- include('partials/header') %>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="text-center">
+            <div class="error-icon mb-4">
+                <i class="fas fa-exclamation-triangle fa-5x text-danger"></i>
+            </div>
+            
+            <h1 class="display-4 mb-3"><%= error.status %></h1>
+            <h2 class="mb-4"><%= error.message %></h2>
+            
+            <% if (error.status === 404) { %>
+                <p class="lead mb-4">
+                    The page you are looking for might have been removed, 
+                    had its name changed, or is temporarily unavailable.
+                </p>
+            <% } else if (error.status === 403) { %>
+                <p class="lead mb-4">
+                    You don't have permission to access this resource. 
+                    Please contact your administrator if you believe this is an error.
+                </p>
+            <% } else { %>
+                <p class="lead mb-4">
+                    An unexpected error occurred. Please try again later or contact support if the problem persists.
+                </p>
+            <% } %>
+            
+            <div class="mb-4">
+                <a href="/dashboard" class="btn btn-primary me-3">
+                    <i class="fas fa-home me-2"></i>Go to Dashboard
+                </a>
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Go Back
+                </a>
+            </div>
+            
+            <% if (error.stack && typeof error.stack !== 'undefined') { %>
+                <div class="mt-5">
+                    <details class="text-start">
+                        <summary class="btn btn-outline-danger btn-sm">Show Error Details</summary>
+                        <pre class="mt-3 p-3 bg-light border rounded"><%= error.stack %></pre>
+                    </details>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
+

@@ -1,0 +1,279 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Page Header -->
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0">Incident Reports</h1>
+          <p class="text-muted">Track and manage incident reports</p>
+        </div>
+        <a href="/incidents/new" class="btn btn-primary">
+          <i class="fas fa-plus me-2"></i>Report Incident
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <form method="GET" action="/incidents" class="row g-3">
+            <div class="col-md-4">
+              <label for="search" class="form-label">Search Incidents</label>
+              <input type="text" class="form-control" id="search" name="search" 
+                     placeholder="Incident number, description, or location..." 
+                     value="<%= filters.search || '' %>">
+            </div>
+            <div class="col-md-2">
+              <label for="severity" class="form-label">Severity</label>
+              <select class="form-select" id="severity" name="severity">
+                <option value="">All Severities</option>
+                <option value="low" <%= filters.severity === 'low' ? 'selected' : '' %>>Low</option>
+                <option value="medium" <%= filters.severity === 'medium' ? 'selected' : '' %>>Medium</option>
+                <option value="high" <%= filters.severity === 'high' ? 'selected' : '' %>>High</option>
+                <option value="critical" <%= filters.severity === 'critical' ? 'selected' : '' %>>Critical</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label for="type" class="form-label">Type</label>
+              <select class="form-select" id="type" name="type">
+                <option value="">All Types</option>
+                <option value="theft" <%= filters.type === 'theft' ? 'selected' : '' %>>Theft</option>
+                <option value="assault" <%= filters.type === 'assault' ? 'selected' : '' %>>Assault</option>
+                <option value="burglary" <%= filters.type === 'burglary' ? 'selected' : '' %>>Burglary</option>
+                <option value="vandalism" <%= filters.type === 'vandalism' ? 'selected' : '' %>>Vandalism</option>
+                <option value="fraud" <%= filters.type === 'fraud' ? 'selected' : '' %>>Fraud</option>
+                <option value="other" <%= filters.type === 'other' ? 'selected' : '' %>>Other</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label for="limit" class="form-label">Per Page</label>
+              <select class="form-select" id="limit" name="limit">
+                <option value="10" <%= filters.limit === '10' ? 'selected' : '' %>>10</option>
+                <option value="25" <%= filters.limit === '25' ? 'selected' : '' %>>25</option>
+                <option value="50" <%= filters.limit === '50' ? 'selected' : '' %>>50</option>
+              </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button type="submit" class="btn btn-outline-primary me-2">
+                <i class="fas fa-search"></i> Search
+              </button>
+              <a href="/incidents" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> Clear
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Incidents Table -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Incidents (<%= incidents.length %> results)</h5>
+        </div>
+        <div class="card-body p-0">
+          <% if (incidents.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Incident #</th>
+                    <th>Type</th>
+                    <th>Date/Time</th>
+                    <th>Location</th>
+                    <th>Severity</th>
+                    <th>Reported By</th>
+                    <th>Linked Case</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% incidents.forEach(function(incident) { %>
+                    <tr>
+                      <td>
+                        <a href="/incidents/<%= incident._id %>" class="text-decoration-none fw-bold">
+                          <%= incident.incidentNumber %>
+                        </a>
+                      </td>
+                      <td>
+                        <span class="badge bg-secondary">
+                          <%= incident.type ? incident.type.charAt(0).toUpperCase() + incident.type.slice(1) : 'Unknown' %>
+                        </span>
+                      </td>
+                      <td>
+                        <div class="d-flex flex-column">
+                          <span><%= new Date(incident.dateTime).toLocaleDateString() %></span>
+                          <small class="text-muted"><%= new Date(incident.dateTime).toLocaleTimeString() %></small>
+                        </div>
+                      </td>
+                      <td>
+                        <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                        <%= incident.location %>
+                      </td>
+                      <td>
+                        <% 
+                          let severityClass = 'secondary';
+                          if (incident.severity === 'high') severityClass = 'danger';
+                          else if (incident.severity === 'critical') severityClass = 'dark';
+                          else if (incident.severity === 'medium') severityClass = 'warning';
+                          else if (incident.severity === 'low') severityClass = 'success';
+                        %>
+                        <span class="badge bg-<%= severityClass %>">
+                          <%= incident.severity.charAt(0).toUpperCase() + incident.severity.slice(1) %>
+                        </span>
+                      </td>
+                      <td>
+                        <% if (incident.reportedBy) { %>
+                          <div class="d-flex flex-column">
+                            <span><%= incident.reportedBy.username %></span>
+                            <small class="text-muted">Badge: <%= incident.reportedBy.badgeNumber %></small>
+                          </div>
+                        <% } else { %>
+                          <span class="text-muted">Unknown</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (incident.caseId) { %>
+                          <a href="/cases/<%= incident.caseId._id %>" class="text-decoration-none">
+                            <%= incident.caseId.caseNumber %>
+                          </a>
+                          <br><small class="text-muted"><%= incident.caseId.title %></small>
+                        <% } else { %>
+                          <span class="text-muted">No case linked</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                          <a href="/incidents/<%= incident._id %>" class="btn btn-outline-primary" title="View">
+                            <i class="fas fa-eye"></i>
+                          </a>
+                          <a href="/incidents/<%= incident._id %>/edit" class="btn btn-outline-secondary" title="Edit">
+                            <i class="fas fa-edit"></i>
+                          </a>
+                          <button type="button" class="btn btn-outline-danger" title="Delete" 
+                                  onclick="deleteIncident('<%= incident._id %>', '<%= incident.incidentNumber %>')">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="text-center py-5">
+              <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">No incidents found</h5>
+              <p class="text-muted">Try adjusting your search criteria or report a new incident.</p>
+              <a href="/incidents/new" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Report New Incident
+              </a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <% if (pagination.totalPages > 1) { %>
+    <div class="row mt-4">
+      <div class="col-12">
+        <nav aria-label="Incidents pagination">
+          <ul class="pagination justify-content-center">
+            <% if (pagination.hasPrev) { %>
+              <li class="page-item">
+                <a class="page-link" href="?page=<%= pagination.prevPage %>&<%= new URLSearchParams(filters).toString() %>">
+                  <i class="fas fa-chevron-left"></i> Previous
+                </a>
+              </li>
+            <% } %>
+            
+            <% for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.totalPages, pagination.page + 2); i++) { %>
+              <li class="page-item <%= i === pagination.page ? 'active' : '' %>">
+                <a class="page-link" href="?page=<%= i %>&<%= new URLSearchParams(filters).toString() %>">
+                  <%= i %>
+                </a>
+              </li>
+            <% } %>
+            
+            <% if (pagination.hasNext) { %>
+              <li class="page-item">
+                <a class="page-link" href="?page=<%= pagination.nextPage %>&<%= new URLSearchParams(filters).toString() %>">
+                  Next <i class="fas fa-chevron-right"></i>
+                </a>
+              </li>
+            <% } %>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete incident <strong id="deleteIncidentNumber"></strong>?</p>
+        <p class="text-danger"><small>This action cannot be undone.</small></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDelete">Delete Incident</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let incidentToDelete = null;
+
+function deleteIncident(incidentId, incidentNumber) {
+  incidentToDelete = incidentId;
+  document.getElementById('deleteIncidentNumber').textContent = incidentNumber;
+  new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+document.getElementById('confirmDelete').addEventListener('click', async function() {
+  if (!incidentToDelete) return;
+  
+  try {
+    const response = await fetch(`/incidents/${incidentToDelete}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      location.reload();
+    } else {
+      alert('Error deleting incident: ' + result.error);
+    }
+  } catch (error) {
+    alert('Error deleting incident: ' + error.message);
+  }
+  
+  bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+});
+</script>
+
+<%- include('../partials/footer') %>
+

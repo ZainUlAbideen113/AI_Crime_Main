@@ -1,0 +1,487 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Page Header -->
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0">Crime Pattern Analysis</h1>
+          <p class="text-muted">AI-powered crime pattern detection and analysis</p>
+        </div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#analysisModal">
+          <i class="fas fa-brain me-2"></i>Run New Analysis
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="mb-0"><%= stats.totalCases %></h4>
+              <p class="mb-0">Total Cases</p>
+            </div>
+            <i class="fas fa-folder-open fa-2x opacity-75"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="mb-0"><%= stats.totalIncidents %></h4>
+              <p class="mb-0">Total Incidents</p>
+            </div>
+            <i class="fas fa-clipboard-list fa-2x opacity-75"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="mb-0"><%= stats.patternsFound %></h4>
+              <p class="mb-0">Patterns Found</p>
+            </div>
+            <i class="fas fa-chart-line fa-2x opacity-75"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card bg-danger text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="mb-0"><%= stats.hotspots %></h4>
+              <p class="mb-0">Crime Hotspots</p>
+            </div>
+            <i class="fas fa-map-marker-alt fa-2x opacity-75"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Recent Patterns -->
+    <div class="col-lg-8">
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Recent Crime Patterns</h5>
+          <a href="/analysis/patterns" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body">
+          <% if (recentPatterns && recentPatterns.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Pattern Type</th>
+                    <th>Description</th>
+                    <th>Confidence</th>
+                    <th>Risk Level</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% recentPatterns.forEach(function(pattern) { %>
+                    <tr>
+                      <td>
+                        <span class="badge bg-secondary">
+                          <%= pattern.patternType.replace('_', ' ').charAt(0).toUpperCase() + pattern.patternType.replace('_', ' ').slice(1) %>
+                        </span>
+                      </td>
+                      <td>
+                        <div class="d-flex flex-column">
+                          <span class="fw-medium"><%= pattern.patternName %></span>
+                          <small class="text-muted"><%= pattern.description.substring(0, 80) %>...</small>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div class="progress me-2" style="width: 60px; height: 8px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: <%= (pattern.confidenceScore * 100) %>%"
+                                 aria-valuenow="<%= (pattern.confidenceScore * 100) %>" 
+                                 aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                          <small><%= Math.round(pattern.confidenceScore * 100) %>%</small>
+                        </div>
+                      </td>
+                      <td>
+                        <% 
+                          let riskClass = 'secondary';
+                          if (pattern.priority === 'high') riskClass = 'danger';
+                          else if (pattern.priority === 'critical') riskClass = 'dark';
+                          else if (pattern.priority === 'medium') riskClass = 'warning';
+                          else if (pattern.priority === 'low') riskClass = 'success';
+                        %>
+                        <span class="badge bg-<%= riskClass %>">
+                          <%= pattern.priority.charAt(0).toUpperCase() + pattern.priority.slice(1) %>
+                        </span>
+                      </td>
+                      <td>
+                        <small class="text-muted">
+                          <%= new Date(pattern.createdAt).toLocaleDateString() %>
+                        </small>
+                      </td>
+                      <td>
+                        <a href="/analysis/patterns/<%= pattern._id %>" class="btn btn-sm btn-outline-primary">
+                          <i class="fas fa-eye"></i>
+                        </a>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="text-center py-4">
+              <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">No patterns detected yet</h5>
+              <p class="text-muted">Run an AI analysis to identify crime patterns and trends.</p>
+              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#analysisModal">
+                <i class="fas fa-brain me-2"></i>Run First Analysis
+              </button>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis Tools -->
+    <div class="col-lg-4">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Analysis Tools</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#analysisModal">
+              <i class="fas fa-brain me-2"></i>Run Comprehensive Analysis
+            </button>
+            <a href="/analysis/patterns" class="btn btn-outline-info">
+              <i class="fas fa-list me-2"></i>View All Patterns
+            </a>
+            <a href="/analysis/hotspots" class="btn btn-outline-warning">
+              <i class="fas fa-map-marked-alt me-2"></i>Crime Hotspots
+            </a>
+            <button type="button" class="btn btn-outline-success" id="exportAnalysisBtn">
+              <i class="fas fa-download me-2"></i>Export Report
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Analysis Summary</h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-6 border-end">
+              <h4 class="text-success mb-0"><%= stats.activeCases %></h4>
+              <small class="text-muted">Active Cases</small>
+            </div>
+            <div class="col-6">
+              <h4 class="text-danger mb-0"><%= stats.highPriorityCases %></h4>
+              <small class="text-muted">High Priority</small>
+            </div>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted">Pattern Detection Rate</span>
+            <span class="fw-bold">
+              <%= stats.totalIncidents > 0 ? Math.round((stats.patternsFound / stats.totalIncidents) * 100) : 0 %>%
+            </span>
+          </div>
+          <div class="progress mb-3" style="height: 8px;">
+            <div class="progress-bar bg-info" role="progressbar" 
+                 style="width: <%= stats.totalIncidents > 0 ? (stats.patternsFound / stats.totalIncidents) * 100 : 0 %>%"></div>
+          </div>
+          <small class="text-muted">
+            Last analysis: <%= recentPatterns.length > 0 ? new Date(recentPatterns[0].createdAt).toLocaleDateString() : 'Never' %>
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Analysis Configuration Modal -->
+<div class="modal fade" id="analysisModal" tabindex="-1" aria-labelledby="analysisModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="analysisModalLabel">Configure AI Analysis</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="analysisForm">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="analysisType" class="form-label">Analysis Type</label>
+                <select class="form-select" id="analysisType" name="analysisType">
+                  <option value="comprehensive">Comprehensive Analysis</option>
+                  <option value="hotspot">Hotspot Detection</option>
+                  <option value="temporal">Temporal Patterns</option>
+                  <option value="series">Crime Series Detection</option>
+                  <option value="predictive">Predictive Analysis</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="timeRange" class="form-label">Time Range</label>
+                <select class="form-select" id="timeRange" name="timeRange">
+                  <option value="7days">Last 7 days</option>
+                  <option value="30days" selected>Last 30 days</option>
+                  <option value="90days">Last 90 days</option>
+                  <option value="1year">Last year</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="location" class="form-label">Location Filter (Optional)</label>
+                <input type="text" class="form-control" id="location" name="location" 
+                       placeholder="Enter location to focus analysis">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="minConfidence" class="form-label">Minimum Confidence</label>
+                <select class="form-select" id="minConfidence" name="minConfidence">
+                  <option value="0.3">30% - Include all patterns</option>
+                  <option value="0.5" selected>50% - Moderate confidence</option>
+                  <option value="0.7">70% - High confidence only</option>
+                  <option value="0.8">80% - Very high confidence</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="crimeTypes" class="form-label">Crime Types (Optional)</label>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="theft" id="crimeType1" name="crimeTypes">
+                  <label class="form-check-label" for="crimeType1">Theft</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="assault" id="crimeType2" name="crimeTypes">
+                  <label class="form-check-label" for="crimeType2">Assault</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="burglary" id="crimeType3" name="crimeTypes">
+                  <label class="form-check-label" for="crimeType3">Burglary</label>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="robbery" id="crimeType4" name="crimeTypes">
+                  <label class="form-check-label" for="crimeType4">Robbery</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="vandalism" id="crimeType5" name="crimeTypes">
+                  <label class="form-check-label" for="crimeType5">Vandalism</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="fraud" id="crimeType6" name="crimeTypes">
+                  <label class="form-check-label" for="crimeType6">Fraud</label>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="drug_offense" id="crimeType7" name="crimeTypes">
+                  <label class="form-check-label" for="crimeType7">Drug Offense</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="cybercrime" id="crimeType8" name="crimeTypes">
+                  <label class="form-check-label" for="crimeType8">Cybercrime</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="other" id="crimeType9" name="crimeTypes">
+                  <label class="form-check-label" for="crimeType9">Other</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>AI Analysis:</strong> This will analyze your crime data using advanced pattern detection algorithms 
+            to identify hotspots, temporal patterns, crime series, and provide predictive insights.
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="runAnalysisBtn">
+          <i class="fas fa-brain me-2"></i>Run Analysis
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Analysis Progress Modal -->
+<div class="modal fade" id="progressModal" tabindex="-1" aria-labelledby="progressModalLabel" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="progressModalLabel">Running AI Analysis</h5>
+      </div>
+      <div class="modal-body text-center">
+        <div class="spinner-border text-primary mb-3" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p id="progressText">Initializing analysis...</p>
+        <div class="progress">
+          <div class="progress-bar progress-bar-striped progress-bar-animated" 
+               role="progressbar" style="width: 0%" id="progressBar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function runAnalysis() {
+  // Get form data
+  const form = document.getElementById('analysisForm');
+  const formData = new FormData(form);
+  
+  // Get selected crime types
+  const crimeTypes = [];
+  document.querySelectorAll('input[name="crimeTypes"]:checked').forEach(function(checkbox) {
+    crimeTypes.push(checkbox.value);
+  });
+  
+  const analysisData = {
+    analysisType: formData.get('analysisType'),
+    timeRange: formData.get('timeRange'),
+    location: formData.get('location'),
+    minConfidence: formData.get('minConfidence'),
+    crimeTypes: crimeTypes
+  };
+  
+  // Hide configuration modal and show progress modal
+  bootstrap.Modal.getInstance(document.getElementById('analysisModal')).hide();
+  const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
+  progressModal.show();
+  
+  // Simulate progress
+  let progress = 0;
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  
+  const progressMessages = [
+    'Initializing analysis...',
+    'Loading crime data...',
+    'Detecting patterns...',
+    'Analyzing hotspots...',
+    'Processing temporal data...',
+    'Generating insights...',
+    'Finalizing results...'
+  ];
+  
+  const progressInterval = setInterval(function() {
+    progress += Math.random() * 15;
+    if (progress > 90) progress = 90;
+    
+    progressBar.style.width = progress + '%';
+    progressText.textContent = progressMessages[Math.floor(progress / 15)] || 'Processing...';
+  }, 500);
+  
+  // Run actual analysis
+  fetch('/analysis/run', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'same-origin', // Include cookies for session authentication
+    body: JSON.stringify(analysisData)
+  })
+  .then(response => {
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    // Check if response is JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Server returned non-JSON response');
+    }
+    
+    return response.json();
+  })
+  .then(data => {
+    console.log('Analysis response:', data);
+    clearInterval(progressInterval);
+    progressBar.style.width = '100%';
+    progressText.textContent = 'Analysis complete!';
+    
+    setTimeout(function() {
+      progressModal.hide();
+      
+      if (data.success) {
+        // Show success message and reload page
+        alert(`Analysis completed successfully!\n\nFound ${data.patterns.length} patterns.\nSaved ${data.savedCount} patterns to database.`);
+        location.reload();
+      } else {
+        alert('Analysis failed: ' + (data.error || 'Unknown error'));
+      }
+    }, 1000);
+  })
+  .catch(error => {
+    console.error('Analysis error:', error);
+    clearInterval(progressInterval);
+    progressModal.hide();
+    alert('Error running analysis: ' + error.message);
+  });
+}
+
+function exportAnalysis() {
+  // This would generate and download an analysis report
+  alert('Export functionality would be implemented here');
+}
+
+// Add event listeners when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+  // Run Analysis button event listener
+  const runAnalysisBtn = document.getElementById('runAnalysisBtn');
+  if (runAnalysisBtn) {
+    runAnalysisBtn.addEventListener('click', runAnalysis);
+  }
+  
+  // Export Analysis button event listener
+  const exportAnalysisBtn = document.getElementById('exportAnalysisBtn');
+  if (exportAnalysisBtn) {
+    exportAnalysisBtn.addEventListener('click', exportAnalysis);
+  }
+});
+</script>
+
+<%- include('../partials/footer') %>
+

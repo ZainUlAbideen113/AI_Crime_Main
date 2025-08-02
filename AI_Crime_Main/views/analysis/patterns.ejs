@@ -1,0 +1,184 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Page Header -->
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0">Crime Patterns</h1>
+          <p class="text-muted">Detected crime patterns and trends</p>
+        </div>
+        <a href="/analysis" class="btn btn-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Back to Analysis
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <form method="GET" action="/analysis/patterns" class="row g-3">
+            <div class="col-md-4">
+              <label for="search" class="form-label">Search Patterns</label>
+              <input type="text" class="form-control" id="search" name="search" 
+                     placeholder="Search patterns..." 
+                     value="<%= filters.search || '' %>">
+            </div>
+            <div class="col-md-3">
+              <label for="type" class="form-label">Type</label>
+              <select class="form-select" id="type" name="type">
+                <option value="">All Types</option>
+                <option value="hotspot" <%= filters.type === 'hotspot' ? 'selected' : '' %>>Hotspot</option>
+                <option value="temporal" <%= filters.type === 'temporal' ? 'selected' : '' %>>Temporal</option>
+                <option value="modus_operandi" <%= filters.type === 'modus_operandi' ? 'selected' : '' %>>Modus Operandi</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label for="confidence" class="form-label">Min Confidence</label>
+              <select class="form-select" id="confidence" name="confidence">
+                <option value="">Any Confidence</option>
+                <option value="0.8" <%= filters.confidence === '0.8' ? 'selected' : '' %>>80%+</option>
+                <option value="0.9" <%= filters.confidence === '0.9' ? 'selected' : '' %>>90%+</option>
+              </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button type="submit" class="btn btn-primary me-2">
+                <i class="fas fa-search"></i> Search
+              </button>
+              <a href="/analysis/patterns" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i>
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patterns List -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Crime Patterns</h5>
+        </div>
+        <div class="card-body">
+          <% if (patterns.length === 0) { %>
+            <div class="text-center py-4">
+              <i class="fas fa-search fa-3x text-muted mb-3"></i>
+              <h5>No patterns found</h5>
+              <p class="text-muted">No crime patterns match your current filters.</p>
+            </div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Confidence</th>
+                    <th>Location</th>
+                    <th>Date Range</th>
+                    <th>Related Cases</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% patterns.forEach(pattern => { %>
+                    <tr>
+                      <td>
+                        <span class="badge bg-<%= pattern.type === 'hotspot' ? 'danger' : pattern.type === 'temporal' ? 'warning' : 'info' %>">
+                          <%= pattern.type %>
+                        </span>
+                      </td>
+                      <td>
+                        <strong><%= pattern.name %></strong>
+                        <br>
+                        <small class="text-muted"><%= pattern.description %></small>
+                      </td>
+                      <td>
+                        <div class="progress" style="width: 80px;">
+                          <div class="progress-bar" role="progressbar" 
+                               style="width: <%= (pattern.confidence * 100) %>%"
+                               aria-valuenow="<%= (pattern.confidence * 100) %>" 
+                               aria-valuemin="0" aria-valuemax="100">
+                            <%= Math.round(pattern.confidence * 100) %>%
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <% if (pattern.locations && pattern.locations.length > 0) { %>
+                          <%= pattern.locations[0] %>
+                          <% if (pattern.locations.length > 1) { %>
+                            <small class="text-muted">+<%= pattern.locations.length - 1 %> more</small>
+                          <% } %>
+                        <% } else { %>
+                          <span class="text-muted">N/A</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (pattern.dateRange) { %>
+                          <%= new Date(pattern.dateRange.start).toLocaleDateString() %> - 
+                          <%= new Date(pattern.dateRange.end).toLocaleDateString() %>
+                        <% } else { %>
+                          <span class="text-muted">N/A</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <span class="badge bg-secondary">
+                          <%= pattern.relatedCases ? pattern.relatedCases.length : 0 %>
+                        </span>
+                      </td>
+                      <td>
+                        <a href="/analysis/patterns/<%= pattern._id %>" class="btn btn-sm btn-outline-primary">
+                          <i class="fas fa-eye"></i> View
+                        </a>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <% if (pagination.totalPages > 1) { %>
+              <nav aria-label="Patterns pagination" class="mt-3">
+                <ul class="pagination justify-content-center">
+                  <% if (pagination.hasPrev) { %>
+                    <li class="page-item">
+                      <a class="page-link" href="?page=<%= pagination.prevPage %><%= Object.keys(filters).map(key => filters[key] ? '&' + key + '=' + encodeURIComponent(filters[key]) : '').join('') %>">
+                        Previous
+                      </a>
+                    </li>
+                  <% } %>
+                  
+                  <% for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.totalPages, pagination.page + 2); i++) { %>
+                    <li class="page-item <%= i === pagination.page ? 'active' : '' %>">
+                      <a class="page-link" href="?page=<%= i %><%= Object.keys(filters).map(key => filters[key] ? '&' + key + '=' + encodeURIComponent(filters[key]) : '').join('') %>">
+                        <%= i %>
+                      </a>
+                    </li>
+                  <% } %>
+                  
+                  <% if (pagination.hasNext) { %>
+                    <li class="page-item">
+                      <a class="page-link" href="?page=<%= pagination.nextPage %><%= Object.keys(filters).map(key => filters[key] ? '&' + key + '=' + encodeURIComponent(filters[key]) : '').join('') %>">
+                        Next
+                      </a>
+                    </li>
+                  <% } %>
+                </ul>
+              </nav>
+            <% } %>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,224 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Page Header -->
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0">Report New Incident</h1>
+          <p class="text-muted">Document incident details and information</p>
+        </div>
+        <a href="/incidents" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Back to Incidents
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Incident Information</h5>
+        </div>
+        <div class="card-body">
+          <% if (error) { %>
+            <div class="alert alert-danger" role="alert">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <%= error %>
+            </div>
+          <% } %>
+
+          <form method="POST" action="/incidents" novalidate>
+            <div class="row">
+              <!-- Basic Information -->
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="type" class="form-label">Incident Type <span class="text-danger">*</span></label>
+                  <select class="form-select" id="type" name="type" required>
+                    <option value="">Select Type</option>
+                    <option value="theft" <%= formData.type === 'theft' ? 'selected' : '' %>>Theft</option>
+                    <option value="assault" <%= formData.type === 'assault' ? 'selected' : '' %>>Assault</option>
+                    <option value="burglary" <%= formData.type === 'burglary' ? 'selected' : '' %>>Burglary</option>
+                    <option value="robbery" <%= formData.type === 'robbery' ? 'selected' : '' %>>Robbery</option>
+                    <option value="vandalism" <%= formData.type === 'vandalism' ? 'selected' : '' %>>Vandalism</option>
+                    <option value="fraud" <%= formData.type === 'fraud' ? 'selected' : '' %>>Fraud</option>
+                    <option value="drug_offense" <%= formData.type === 'drug_offense' ? 'selected' : '' %>>Drug Offense</option>
+                    <option value="domestic_violence" <%= formData.type === 'domestic_violence' ? 'selected' : '' %>>Domestic Violence</option>
+                    <option value="traffic_violation" <%= formData.type === 'traffic_violation' ? 'selected' : '' %>>Traffic Violation</option>
+                    <option value="public_disturbance" <%= formData.type === 'public_disturbance' ? 'selected' : '' %>>Public Disturbance</option>
+                    <option value="cybercrime" <%= formData.type === 'cybercrime' ? 'selected' : '' %>>Cybercrime</option>
+                    <option value="other" <%= formData.type === 'other' ? 'selected' : '' %>>Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="mb-3">
+                  <label for="severity" class="form-label">Severity <span class="text-danger">*</span></label>
+                  <select class="form-select" id="severity" name="severity" required>
+                    <option value="">Select Severity</option>
+                    <option value="low" <%= formData.severity === 'low' ? 'selected' : '' %>>Low</option>
+                    <option value="medium" <%= formData.severity === 'medium' ? 'selected' : '' %>>Medium</option>
+                    <option value="high" <%= formData.severity === 'high' ? 'selected' : '' %>>High</option>
+                    <option value="critical" <%= formData.severity === 'critical' ? 'selected' : '' %>>Critical</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="mb-3">
+                  <label for="dateTime" class="form-label">Date & Time <span class="text-danger">*</span></label>
+                  <input type="datetime-local" class="form-control" id="dateTime" name="dateTime" 
+                         value="<%= formData.dateTime || new Date().toISOString().slice(0, 16) %>" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="location" class="form-label">Location <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="location" name="location" 
+                     value="<%= formData.location || '' %>" required>
+              <div class="form-text">Specific location where the incident occurred</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+              <textarea class="form-control" id="description" name="description" rows="4" required><%= formData.description || '' %></textarea>
+              <div class="form-text">Detailed description of what happened</div>
+            </div>
+
+            <!-- Link to Case -->
+            <div class="card mb-3">
+              <div class="card-header">
+                <h6 class="card-title mb-0">Case Association</h6>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="caseId" class="form-label">Link to Existing Case</label>
+                  <select class="form-select" id="caseId" name="caseId">
+                    <option value="">No case association</option>
+                    <% if (openCases && openCases.length > 0) { %>
+                      <% openCases.forEach(function(case_item) { %>
+                        <option value="<%= case_item._id %>" <%= formData.caseId === case_item._id.toString() ? 'selected' : '' %>>
+                          <%= case_item.caseNumber %> - <%= case_item.title %>
+                        </option>
+                      <% }); %>
+                    <% } %>
+                  </select>
+                  <div class="form-text">Optional: Link this incident to an existing case</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Witnesses -->
+            <div class="card mb-3">
+              <div class="card-header">
+                <h6 class="card-title mb-0">Witness Information</h6>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="witnesses" class="form-label">Witness Details</label>
+                  <textarea class="form-control" id="witnesses" name="witnesses" rows="3"><%= formData.witnesses || '' %></textarea>
+                  <div class="form-text">Names, contact information, and statements from witnesses</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Evidence -->
+            <div class="card mb-4">
+              <div class="card-header">
+                <h6 class="card-title mb-0">Evidence & Additional Information</h6>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="evidence" class="form-label">Evidence Notes</label>
+                  <textarea class="form-control" id="evidence" name="evidence" rows="3"><%= formData.evidence || '' %></textarea>
+                  <div class="form-text">Details about physical evidence, photos, or other relevant materials</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-between">
+              <a href="/incidents" class="btn btn-secondary">
+                <i class="fas fa-times me-2"></i>Cancel
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-2"></i>Report Incident
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Form validation
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    var forms = document.getElementsByClassName('needs-validation');
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+
+// Auto-resize textareas
+document.querySelectorAll('textarea').forEach(function(textarea) {
+  textarea.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+  });
+});
+
+// Severity level guidance
+document.getElementById('severity').addEventListener('change', function() {
+  const severityHelp = {
+    'low': 'Minor incidents with minimal impact (e.g., petty theft, minor vandalism)',
+    'medium': 'Moderate incidents requiring attention (e.g., burglary, assault without injury)',
+    'high': 'Serious incidents with significant impact (e.g., armed robbery, assault with injury)',
+    'critical': 'Emergency situations requiring immediate response (e.g., violent crimes, ongoing threats)'
+  };
+  
+  const helpText = severityHelp[this.value];
+  if (helpText) {
+    // You could show this in a tooltip or help text area
+    console.log('Severity guidance:', helpText);
+  }
+});
+
+// Auto-suggest case based on incident type and location
+document.getElementById('type').addEventListener('change', function() {
+  const incidentType = this.value;
+  const location = document.getElementById('location').value;
+  
+  if (incidentType && location) {
+    // This could trigger an AJAX call to suggest relevant cases
+    console.log('Could suggest cases for type:', incidentType, 'at location:', location);
+  }
+});
+
+document.getElementById('location').addEventListener('blur', function() {
+  const incidentType = document.getElementById('type').value;
+  const location = this.value;
+  
+  if (incidentType && location) {
+    // This could trigger an AJAX call to suggest relevant cases
+    console.log('Could suggest cases for type:', incidentType, 'at location:', location);
+  }
+});
+</script>
+
+<%- include('../partials/footer') %>
+

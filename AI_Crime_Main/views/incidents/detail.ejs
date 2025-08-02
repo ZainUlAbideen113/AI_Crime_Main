@@ -1,0 +1,307 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Page Header -->
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0">Incident Details</h1>
+          <p class="text-muted">Detailed view of incident information</p>
+        </div>
+        <div>
+          <a href="/incidents" class="btn btn-secondary me-2">
+            <i class="fas fa-arrow-left me-2"></i>Back to Incidents
+          </a>
+          <% if (incident && user && (user.role === 'admin' || incident.reportedBy.toString() === user._id.toString())) { %>
+            <a href="/incidents/<%= incident._id %>/edit" class="btn btn-warning me-2">
+              <i class="fas fa-edit me-2"></i>Edit
+            </a>
+          <% } %>
+          <button type="button" class="btn btn-primary" onclick="window.print()">
+            <i class="fas fa-print me-2"></i>Print
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% if (incident) { %>
+    <!-- Incident Overview -->
+    <div class="row mb-4">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              Incident #<%= incident.incidentNumber %>
+              <span class="badge bg-<%= incident.severity === 'high' ? 'danger' : incident.severity === 'medium' ? 'warning' : 'info' %> ms-2">
+                <%= incident.severity %>
+              </span>
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <h6>Type</h6>
+                <p class="text-muted"><%= incident.type %></p>
+              </div>
+              <div class="col-md-6">
+                <h6>Date & Time</h6>
+                <p class="text-muted"><%= new Date(incident.dateTime).toLocaleString() %></p>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <h6>Location</h6>
+                <p class="text-muted">
+                  <i class="fas fa-map-marker-alt me-2"></i>
+                  <%= incident.location %>
+                </p>
+              </div>
+              <div class="col-md-6">
+                <h6>Reported By</h6>
+                <p class="text-muted">
+                  <% if (incident.reportedBy) { %>
+                    <%= incident.reportedBy.username %>
+                    <% if (incident.reportedBy.badgeNumber) { %>
+                      (Badge: <%= incident.reportedBy.badgeNumber %>)
+                    <% } %>
+                  <% } else { %>
+                    Unknown
+                  <% } %>
+                </p>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-12">
+                <h6>Description</h6>
+                <p class="card-text"><%= incident.description %></p>
+              </div>
+            </div>
+
+            <% if (incident.evidence && incident.evidence.length > 0) { %>
+              <div class="row mb-3">
+                <div class="col-12">
+                  <h6>Evidence</h6>
+                  <div class="row">
+                    <% incident.evidence.forEach(evidence => { %>
+                      <div class="col-md-4 mb-2">
+                        <div class="card border">
+                          <div class="card-body p-2">
+                            <h6 class="card-title mb-1"><%= evidence.type %></h6>
+                            <p class="card-text small text-muted"><%= evidence.description %></p>
+                            <% if (evidence.fileUrl) { %>
+                              <a href="<%= evidence.fileUrl %>" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="fas fa-download"></i> View
+                              </a>
+                            <% } %>
+                          </div>
+                        </div>
+                      </div>
+                    <% }); %>
+                  </div>
+                </div>
+              </div>
+            <% } %>
+
+            <% if (incident.witnesses && incident.witnesses.length > 0) { %>
+              <div class="row mb-3">
+                <div class="col-12">
+                  <h6>Witnesses</h6>
+                  <div class="table-responsive">
+                    <table class="table table-sm">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Contact</th>
+                          <th>Statement</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% incident.witnesses.forEach(witness => { %>
+                          <tr>
+                            <td><%= witness.name %></td>
+                            <td><%= witness.contact %></td>
+                            <td><%= witness.statement.substring(0, 100) %>...</td>
+                          </tr>
+                        <% }); %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            <% } %>
+
+            <% if (incident.suspects && incident.suspects.length > 0) { %>
+              <div class="row mb-3">
+                <div class="col-12">
+                  <h6>Suspects</h6>
+                  <div class="table-responsive">
+                    <table class="table table-sm">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Description</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% incident.suspects.forEach(suspect => { %>
+                          <tr>
+                            <td><%= suspect.name || 'Unknown' %></td>
+                            <td><%= suspect.description %></td>
+                            <td>
+                              <span class="badge bg-<%= suspect.status === 'apprehended' ? 'success' : suspect.status === 'wanted' ? 'danger' : 'warning' %>">
+                                <%= suspect.status %>
+                              </span>
+                            </td>
+                          </tr>
+                        <% }); %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4">
+        <div class="card">
+          <div class="card-header">
+            <h6 class="card-title mb-0">Incident Information</h6>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span>Status:</span>
+              <span class="badge bg-<%= incident.status === 'closed' ? 'success' : incident.status === 'in_progress' ? 'warning' : 'info' %>">
+                <%= incident.status %>
+              </span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span>Severity:</span>
+              <span class="badge bg-<%= incident.severity === 'high' ? 'danger' : incident.severity === 'medium' ? 'warning' : 'info' %>">
+                <%= incident.severity %>
+              </span>
+            </div>
+            <% if (incident.caseId) { %>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span>Associated Case:</span>
+                <a href="/cases/<%= incident.caseId._id %>" class="btn btn-sm btn-link p-0">
+                  <%= incident.caseId.caseNumber %>
+                </a>
+              </div>
+            <% } %>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span>Created:</span>
+              <small><%= new Date(incident.createdAt).toLocaleString() %></small>
+            </div>
+            <% if (incident.updatedAt && incident.updatedAt !== incident.createdAt) { %>
+              <div class="d-flex justify-content-between align-items-center">
+                <span>Updated:</span>
+                <small><%= new Date(incident.updatedAt).toLocaleString() %></small>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <% if (incident.coordinates) { %>
+          <div class="card mt-3">
+            <div class="card-header">
+              <h6 class="card-title mb-0">Location Map</h6>
+            </div>
+            <div class="card-body">
+              <div class="text-center py-3" style="background-color: #f8f9fa; border: 1px dashed #dee2e6; border-radius: 0.375rem;">
+                <i class="fas fa-map fa-2x text-muted mb-2"></i>
+                <p class="text-muted mb-1">Map View</p>
+                <small class="text-muted">
+                  <%= incident.coordinates.lat.toFixed(4) %>, <%= incident.coordinates.lng.toFixed(4) %>
+                </small>
+              </div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Related Actions -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h6 class="card-title mb-0">Related Actions</h6>
+          </div>
+          <div class="card-body">
+            <div class="d-flex flex-wrap gap-2">
+              <% if (!incident.caseId) { %>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#linkCaseModal">
+                  <i class="fas fa-link me-2"></i>Link to Case
+                </button>
+              <% } %>
+              <button type="button" class="btn btn-outline-secondary" onclick="exportIncident()">
+                <i class="fas fa-download me-2"></i>Export PDF
+              </button>
+              <button type="button" class="btn btn-outline-info" onclick="shareIncident()">
+                <i class="fas fa-share me-2"></i>Share
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="row">
+      <div class="col-12">
+        <div class="alert alert-warning">
+          <h5>Incident Not Found</h5>
+          <p>The requested incident could not be found.</p>
+          <a href="/incidents" class="btn btn-primary">Back to Incidents</a>
+        </div>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<!-- Link Case Modal -->
+<div class="modal fade" id="linkCaseModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Link to Case</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="/incidents/<%= incident ? incident._id : '' %>/link-case" method="POST">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="caseId" class="form-label">Select Case</label>
+            <select class="form-select" id="caseId" name="caseId" required>
+              <option value="">Choose a case...</option>
+              <!-- Cases would be populated here -->
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Link Case</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function exportIncident() {
+  // This would export the incident details as PDF
+  alert('Export functionality would be implemented here');
+}
+
+function shareIncident() {
+  // This would share the incident details
+  alert('Share functionality would be implemented here');
+}
+</script>
+
+<%- include('../partials/footer') %>

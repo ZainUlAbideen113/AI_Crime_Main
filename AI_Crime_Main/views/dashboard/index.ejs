@@ -1,0 +1,158 @@
+<%- include('../partials/header') %>
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">
+                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </h1>
+            <div class="text-muted">
+                Welcome back, <strong><%= user.username %></strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Active Cases</h5>
+                        <h2 class="mb-0">--</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-folder-open fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Recent Incidents</h5>
+                        <h2 class="mb-0">--</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Patterns Found</h5>
+                        <h2 class="mb-0">--</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">High Priority</h5>
+                        <h2 class="mb-0">--</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="/cases/new" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-plus me-2"></i>New Case
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="/incidents/new" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-file-alt me-2"></i>Report Incident
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="/analysis/run" class="btn btn-outline-success w-100">
+                            <i class="fas fa-brain me-2"></i>Run Analysis
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="/search" class="btn btn-outline-info w-100">
+                            <i class="fas fa-search me-2"></i>Search Records
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>Recent Activity
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <p>No recent activity to display.</p>
+                    <small>Activity will appear here as you work with cases and incidents.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-map-marked-alt me-2"></i>Crime Hotspots
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-map fa-3x mb-3"></i>
+                    <p>No hotspots detected.</p>
+                    <small>AI analysis will identify crime patterns and hotspots.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
+

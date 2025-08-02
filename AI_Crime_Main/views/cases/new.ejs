@@ -1,0 +1,164 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Page Header -->
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0">Create New Case</h1>
+          <p class="text-muted">Enter case details and information</p>
+        </div>
+        <a href="/cases" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Back to Cases
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Case Information</h5>
+        </div>
+        <div class="card-body">
+          <% if (error) { %>
+            <div class="alert alert-danger" role="alert">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <%= error %>
+            </div>
+          <% } %>
+
+          <form method="POST" action="/cases" novalidate>
+            <div class="row">
+              <!-- Basic Information -->
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="title" class="form-label">Case Title <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="title" name="title" 
+                         value="<%= formData.title || '' %>" required>
+                  <div class="form-text">Brief descriptive title for the case</div>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="mb-3">
+                  <label for="priority" class="form-label">Priority <span class="text-danger">*</span></label>
+                  <select class="form-select" id="priority" name="priority" required>
+                    <option value="">Select Priority</option>
+                    <option value="low" <%= formData.priority === 'low' ? 'selected' : '' %>>Low</option>
+                    <option value="medium" <%= formData.priority === 'medium' ? 'selected' : '' %>>Medium</option>
+                    <option value="high" <%= formData.priority === 'high' ? 'selected' : '' %>>High</option>
+                    <option value="critical" <%= formData.priority === 'critical' ? 'selected' : '' %>>Critical</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="mb-3">
+                  <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
+                  <select class="form-select" id="category" name="category" required>
+                    <option value="">Select Category</option>
+                    <option value="theft" <%= formData.category === 'theft' ? 'selected' : '' %>>Theft</option>
+                    <option value="assault" <%= formData.category === 'assault' ? 'selected' : '' %>>Assault</option>
+                    <option value="burglary" <%= formData.category === 'burglary' ? 'selected' : '' %>>Burglary</option>
+                    <option value="robbery" <%= formData.category === 'robbery' ? 'selected' : '' %>>Robbery</option>
+                    <option value="vandalism" <%= formData.category === 'vandalism' ? 'selected' : '' %>>Vandalism</option>
+                    <option value="fraud" <%= formData.category === 'fraud' ? 'selected' : '' %>>Fraud</option>
+                    <option value="drug_offense" <%= formData.category === 'drug_offense' ? 'selected' : '' %>>Drug Offense</option>
+                    <option value="domestic_violence" <%= formData.category === 'domestic_violence' ? 'selected' : '' %>>Domestic Violence</option>
+                    <option value="homicide" <%= formData.category === 'homicide' ? 'selected' : '' %>>Homicide</option>
+                    <option value="cybercrime" <%= formData.category === 'cybercrime' ? 'selected' : '' %>>Cybercrime</option>
+                    <option value="other" <%= formData.category === 'other' ? 'selected' : '' %>>Other</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+              <textarea class="form-control" id="description" name="description" rows="4" required><%= formData.description || '' %></textarea>
+              <div class="form-text">Detailed description of the case</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="location" class="form-label">Location <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="location" name="location" 
+                     value="<%= formData.location || '' %>" required>
+              <div class="form-text">Primary location where the incident occurred</div>
+            </div>
+
+            <!-- Suspect Information -->
+            <div class="card mb-3">
+              <div class="card-header">
+                <h6 class="card-title mb-0">Suspect Information</h6>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="suspectInfo" class="form-label">Suspect Details</label>
+                  <textarea class="form-control" id="suspectInfo" name="suspectInfo" rows="3"><%= formData.suspectInfo || '' %></textarea>
+                  <div class="form-text">Description, known information, or identifying details about suspects</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Evidence Information -->
+            <div class="card mb-4">
+              <div class="card-header">
+                <h6 class="card-title mb-0">Evidence & Notes</h6>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="evidenceNotes" class="form-label">Evidence Notes</label>
+                  <textarea class="form-control" id="evidenceNotes" name="evidenceNotes" rows="3"><%= formData.evidenceNotes || '' %></textarea>
+                  <div class="form-text">Details about collected evidence, witness statements, or other relevant information</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-between">
+              <a href="/cases" class="btn btn-secondary">
+                <i class="fas fa-times me-2"></i>Cancel
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-2"></i>Create Case
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Form validation
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    var forms = document.getElementsByClassName('needs-validation');
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+
+// Auto-resize textareas
+document.querySelectorAll('textarea').forEach(function(textarea) {
+  textarea.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+  });
+});
+</script>
+
+<%- include('../partials/footer') %>
+

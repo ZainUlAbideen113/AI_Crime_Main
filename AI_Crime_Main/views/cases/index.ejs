@@ -1,0 +1,296 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Page Header -->
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0">Case Management</h1>
+          <p class="text-muted">Manage and track criminal cases</p>
+        </div>
+        <a href="/cases/new" class="btn btn-primary">
+          <i class="fas fa-plus me-2"></i>New Case
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <form method="GET" action="/cases" class="row g-3">
+            <div class="col-md-4">
+              <label for="search" class="form-label">Search Cases</label>
+              <input type="text" class="form-control" id="search" name="search" 
+                     placeholder="Case number, title, or description..." 
+                     value="<%= filters.search || '' %>">
+            </div>
+            <div class="col-md-2">
+              <label for="status" class="form-label">Status</label>
+              <select class="form-select" id="status" name="status">
+                <option value="">All Statuses</option>
+                <option value="open" <%= filters.status === 'open' ? 'selected' : '' %>>Open</option>
+                <option value="in_progress" <%= filters.status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
+                <option value="closed" <%= filters.status === 'closed' ? 'selected' : '' %>>Closed</option>
+                <option value="cold" <%= filters.status === 'cold' ? 'selected' : '' %>>Cold Case</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label for="priority" class="form-label">Priority</label>
+              <select class="form-select" id="priority" name="priority">
+                <option value="">All Priorities</option>
+                <option value="low" <%= filters.priority === 'low' ? 'selected' : '' %>>Low</option>
+                <option value="medium" <%= filters.priority === 'medium' ? 'selected' : '' %>>Medium</option>
+                <option value="high" <%= filters.priority === 'high' ? 'selected' : '' %>>High</option>
+                <option value="critical" <%= filters.priority === 'critical' ? 'selected' : '' %>>Critical</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label for="limit" class="form-label">Per Page</label>
+              <select class="form-select" id="limit" name="limit">
+                <option value="10" <%= filters.limit === '10' ? 'selected' : '' %>>10</option>
+                <option value="25" <%= filters.limit === '25' ? 'selected' : '' %>>25</option>
+                <option value="50" <%= filters.limit === '50' ? 'selected' : '' %>>50</option>
+              </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button type="submit" class="btn btn-outline-primary me-2">
+                <i class="fas fa-search"></i> Search
+              </button>
+              <a href="/cases" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> Clear
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cases Table -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Cases (<%= cases.length %> results)</h5>
+        </div>
+        <div class="card-body p-0">
+          <% if (cases.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Case Number</th>
+                    <th>Title</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Assigned Officer</th>
+                    <th>Incidents</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% cases.forEach(function(case_item) { %>
+                    <tr>
+                      <td>
+                        <a href="/cases/<%= case_item._id %>" class="text-decoration-none fw-bold">
+                          <%= case_item.caseNumber %>
+                        </a>
+                      </td>
+                      <td>
+                        <div class="d-flex flex-column">
+                          <span class="fw-medium"><%= case_item.title %></span>
+                          <small class="text-muted">
+                            <% if (case_item.tags && case_item.tags.length > 0) { %>
+                              <%= case_item.tags[0].replace('_', ' ').charAt(0).toUpperCase() + case_item.tags[0].replace('_', ' ').slice(1) %>
+                            <% } else { %>
+                              No category
+                            <% } %>
+                          </small>
+                        </div>
+                      </td>
+                      <td>
+                        <% 
+                          let priorityClass = 'secondary';
+                          let priorityText = 'Medium';
+                          if (case_item.priority >= 9) {
+                            priorityClass = 'dark';
+                            priorityText = 'Critical';
+                          } else if (case_item.priority >= 7) {
+                            priorityClass = 'danger';
+                            priorityText = 'High';
+                          } else if (case_item.priority >= 4) {
+                            priorityClass = 'warning';
+                            priorityText = 'Medium';
+                          } else {
+                            priorityClass = 'success';
+                            priorityText = 'Low';
+                          }
+                        %>
+                        <span class="badge bg-<%= priorityClass %>">
+                          <%= priorityText %>
+                        </span>
+                      </td>
+                      <td>
+                        <% 
+                          let statusClass = 'secondary';
+                          if (case_item.status === 'open') statusClass = 'primary';
+                          else if (case_item.status === 'investigating') statusClass = 'info';
+                          else if (case_item.status === 'closed') statusClass = 'success';
+                          else if (case_item.status === 'cold') statusClass = 'dark';
+                        %>
+                        <span class="badge bg-<%= statusClass %>">
+                          <%= case_item.status.replace('_', ' ').charAt(0).toUpperCase() + case_item.status.replace('_', ' ').slice(1) %>
+                        </span>
+                      </td>
+                      <td>
+                        <% if (case_item.assignedOfficer) { %>
+                          <div class="d-flex flex-column">
+                            <span><%= case_item.assignedOfficer.username %></span>
+                            <small class="text-muted">Badge: <%= case_item.assignedOfficer.badgeNumber %></small>
+                          </div>
+                        <% } else { %>
+                          <span class="text-muted">Unassigned</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <span class="badge bg-info">
+                          <%= case_item.incidents ? case_item.incidents.length : 0 %> incidents
+                        </span>
+                      </td>
+                      <td>
+                        <small class="text-muted">
+                          <%= new Date(case_item.createdAt).toLocaleDateString() %>
+                        </small>
+                      </td>
+                      <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                          <a href="/cases/<%= case_item._id %>" class="btn btn-outline-primary" title="View">
+                            <i class="fas fa-eye"></i>
+                          </a>
+                          <a href="/cases/<%= case_item._id %>/edit" class="btn btn-outline-secondary" title="Edit">
+                            <i class="fas fa-edit"></i>
+                          </a>
+                          <button type="button" class="btn btn-outline-danger" title="Delete" 
+                                  onclick="deleteCase('<%= case_item._id %>', '<%= case_item.caseNumber %>')">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="text-center py-5">
+              <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">No cases found</h5>
+              <p class="text-muted">Try adjusting your search criteria or create a new case.</p>
+              <a href="/cases/new" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create New Case
+              </a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <% if (pagination.totalPages > 1) { %>
+    <div class="row mt-4">
+      <div class="col-12">
+        <nav aria-label="Cases pagination">
+          <ul class="pagination justify-content-center">
+            <% if (pagination.hasPrev) { %>
+              <li class="page-item">
+                <a class="page-link" href="?page=<%= pagination.prevPage %>&<%= new URLSearchParams(filters).toString() %>">
+                  <i class="fas fa-chevron-left"></i> Previous
+                </a>
+              </li>
+            <% } %>
+            
+            <% for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.totalPages, pagination.page + 2); i++) { %>
+              <li class="page-item <%= i === pagination.page ? 'active' : '' %>">
+                <a class="page-link" href="?page=<%= i %>&<%= new URLSearchParams(filters).toString() %>">
+                  <%= i %>
+                </a>
+              </li>
+            <% } %>
+            
+            <% if (pagination.hasNext) { %>
+              <li class="page-item">
+                <a class="page-link" href="?page=<%= pagination.nextPage %>&<%= new URLSearchParams(filters).toString() %>">
+                  Next <i class="fas fa-chevron-right"></i>
+                </a>
+              </li>
+            <% } %>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete case <strong id="deleteCaseNumber"></strong>?</p>
+        <p class="text-danger"><small>This action cannot be undone and will also delete all associated incidents.</small></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDelete">Delete Case</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let caseToDelete = null;
+
+function deleteCase(caseId, caseNumber) {
+  caseToDelete = caseId;
+  document.getElementById('deleteCaseNumber').textContent = caseNumber;
+  new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+document.getElementById('confirmDelete').addEventListener('click', async function() {
+  if (!caseToDelete) return;
+  
+  try {
+    const response = await fetch(`/cases/${caseToDelete}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      location.reload();
+    } else {
+      alert('Error deleting case: ' + result.error);
+    }
+  } catch (error) {
+    alert('Error deleting case: ' + error.message);
+  }
+  
+  bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+});
+</script>
+
+<%- include('../partials/footer') %>
+

@@ -1,0 +1,290 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Page Header -->
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-0">Edit Case</h1>
+          <p class="text-muted">Case Number: <%= caseData.caseNumber %></p>
+        </div>
+        <div class="btn-group" role="group">
+          <a href="/cases/<%= caseData._id %>" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Case
+          </a>
+          <a href="/cases" class="btn btn-outline-secondary">
+            <i class="fas fa-list me-2"></i>All Cases
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Update Case Information</h5>
+        </div>
+        <div class="card-body">
+          <% if (error) { %>
+            <div class="alert alert-danger" role="alert">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <%= error %>
+            </div>
+          <% } %>
+
+          <form method="POST" action="/cases/<%= caseData._id %>?_method=PUT" novalidate>
+            <div class="row">
+              <!-- Basic Information -->
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="title" class="form-label">Case Title <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="title" name="title" 
+                         value="<%= caseData.title %>" required>
+                  <div class="form-text">Brief descriptive title for the case</div>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="mb-3">
+                  <label for="priority" class="form-label">Priority <span class="text-danger">*</span></label>
+                  <select class="form-select" id="priority" name="priority" required>
+                    <option value="">Select Priority</option>
+                    <% 
+                      let currentPriority = 'medium';
+                      if (caseData.priority >= 9) currentPriority = 'critical';
+                      else if (caseData.priority >= 7) currentPriority = 'high';
+                      else if (caseData.priority >= 4) currentPriority = 'medium';
+                      else currentPriority = 'low';
+                    %>
+                    <option value="low" <%= currentPriority === 'low' ? 'selected' : '' %>>Low</option>
+                    <option value="medium" <%= currentPriority === 'medium' ? 'selected' : '' %>>Medium</option>
+                    <option value="high" <%= currentPriority === 'high' ? 'selected' : '' %>>High</option>
+                    <option value="critical" <%= currentPriority === 'critical' ? 'selected' : '' %>>Critical</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="mb-3">
+                  <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                  <select class="form-select" id="status" name="status" required>
+                    <option value="">Select Status</option>
+                    <option value="open" <%= caseData.status === 'open' ? 'selected' : '' %>>Open</option>
+                    <option value="investigating" <%= caseData.status === 'investigating' ? 'selected' : '' %>>Investigating</option>
+                    <option value="closed" <%= caseData.status === 'closed' ? 'selected' : '' %>>Closed</option>
+                    <option value="cold" <%= caseData.status === 'cold' ? 'selected' : '' %>>Cold Case</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
+                  <select class="form-select" id="category" name="category" required>
+                    <option value="">Select Category</option>
+                    <% 
+                      let currentCategory = caseData.tags && caseData.tags.length > 0 ? caseData.tags[0] : '';
+                    %>
+                    <option value="theft" <%= currentCategory === 'theft' ? 'selected' : '' %>>Theft</option>
+                    <option value="assault" <%= currentCategory === 'assault' ? 'selected' : '' %>>Assault</option>
+                    <option value="burglary" <%= currentCategory === 'burglary' ? 'selected' : '' %>>Burglary</option>
+                    <option value="robbery" <%= currentCategory === 'robbery' ? 'selected' : '' %>>Robbery</option>
+                    <option value="vandalism" <%= currentCategory === 'vandalism' ? 'selected' : '' %>>Vandalism</option>
+                    <option value="fraud" <%= currentCategory === 'fraud' ? 'selected' : '' %>>Fraud</option>
+                    <option value="drug_offense" <%= currentCategory === 'drug_offense' ? 'selected' : '' %>>Drug Offense</option>
+                    <option value="domestic_violence" <%= currentCategory === 'domestic_violence' ? 'selected' : '' %>>Domestic Violence</option>
+                    <option value="homicide" <%= currentCategory === 'homicide' ? 'selected' : '' %>>Homicide</option>
+                    <option value="cybercrime" <%= currentCategory === 'cybercrime' ? 'selected' : '' %>>Cybercrime</option>
+                    <option value="other" <%= currentCategory === 'other' ? 'selected' : '' %>>Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="location" class="form-label">Location <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="location" name="location" 
+                         value="<%= caseData.location.address || caseData.location || '' %>" required>
+                  <div class="form-text">Primary location where the incident occurred</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+              <textarea class="form-control" id="description" name="description" rows="4" required><%= caseData.description %></textarea>
+              <div class="form-text">Detailed description of the case</div>
+            </div>
+
+            <!-- Suspect Information -->
+            <div class="card mb-3">
+              <div class="card-header">
+                <h6 class="card-title mb-0">Suspect Information</h6>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="suspectInfo" class="form-label">Suspect Details</label>
+                  <textarea class="form-control" id="suspectInfo" name="suspectInfo" rows="3"><%= caseData.suspectInfo || '' %></textarea>
+                  <div class="form-text">Description, known information, or identifying details about suspects</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Evidence Information -->
+            <div class="card mb-4">
+              <div class="card-header">
+                <h6 class="card-title mb-0">Evidence & Notes</h6>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="evidenceNotes" class="form-label">Evidence Notes</label>
+                  <textarea class="form-control" id="evidenceNotes" name="evidenceNotes" rows="3"><%= caseData.evidenceNotes || '' %></textarea>
+                  <div class="form-text">Details about collected evidence, witness statements, or other relevant information</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Case Metadata -->
+            <div class="card mb-4">
+              <div class="card-header">
+                <h6 class="card-title mb-0">Case Information</h6>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-4">
+                    <h6 class="text-muted">Case Number</h6>
+                    <p class="fw-bold"><%= caseData.caseNumber %></p>
+                  </div>
+                  <div class="col-md-4">
+                    <h6 class="text-muted">Created</h6>
+                    <p><%= new Date(caseData.createdAt).toLocaleDateString() %></p>
+                  </div>
+                  <div class="col-md-4">
+                    <h6 class="text-muted">Last Updated</h6>
+                    <p><%= new Date(caseData.updatedAt).toLocaleDateString() %></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-between">
+              <div>
+                <a href="/cases/<%= caseData._id %>" class="btn btn-secondary">
+                  <i class="fas fa-times me-2"></i>Cancel
+                </a>
+              </div>
+              <div>
+                <button type="button" class="btn btn-outline-danger me-2" 
+                        onclick="deleteCase('<%= caseData._id %>', '<%= caseData.caseNumber %>')">
+                  <i class="fas fa-trash me-2"></i>Delete Case
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save me-2"></i>Update Case
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete case <strong id="deleteCaseNumber"></strong>?</p>
+        <p class="text-danger"><small>This action cannot be undone and will also delete all associated incidents.</small></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDelete">Delete Case</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let caseToDelete = null;
+
+function deleteCase(caseId, caseNumber) {
+  caseToDelete = caseId;
+  document.getElementById('deleteCaseNumber').textContent = caseNumber;
+  new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+document.getElementById('confirmDelete').addEventListener('click', async function() {
+  if (!caseToDelete) return;
+  
+  try {
+    const response = await fetch(`/cases/${caseToDelete}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      window.location.href = '/cases';
+    } else {
+      alert('Error deleting case: ' + result.error);
+    }
+  } catch (error) {
+    alert('Error deleting case: ' + error.message);
+  }
+  
+  bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+});
+
+// Form validation
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    var forms = document.getElementsByClassName('needs-validation');
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+
+// Auto-resize textareas
+document.querySelectorAll('textarea').forEach(function(textarea) {
+  textarea.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+  });
+});
+
+// Status change confirmation
+document.getElementById('status').addEventListener('change', function() {
+  if (this.value === 'closed') {
+    if (!confirm('Are you sure you want to close this case? This will mark it as resolved.')) {
+      this.value = '<%= caseData.status %>';
+    }
+  }
+});
+</script>
+
+<%- include('../partials/footer') %>
+
+
